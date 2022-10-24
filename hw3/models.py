@@ -7,15 +7,12 @@ from scipy.sparse import csr_matrix
 
 import pdb
 
+
 class UnigramFeatureExtractor:
     """
-    Extracts unigram bag-of-words features from a sentence. It's up to you to decide how you want to handle counts
-    and any additional preprocessing you want to do.
+    Extracts unigram bag-of-words features from a sentence.
     """
     def __init__(self, indexer: Indexer, train_exs, stop_words):
-        nltk.download('stopwords')
-        stop_words = set(stopwords.words('english'))
-
         for sentimentExample in train_exs:
             words = sentimentExample.words
             for word in words:
@@ -30,6 +27,40 @@ class UnigramFeatureExtractor:
             sentence = sentimentExample.words
             self.feats.append(self.calculate_sentence_probability(sentence))
 
+    def calculate_sentence_probability(self, sentence):
+        col = [self.indexer.index_of(word.lower()) for word in sentence if self.indexer.contains(word.lower())]
+        row = np.zeros(len(col), dtype=np.int)
+        data = np.ones(len(col), dtype=np.int)
+        feat = csr_matrix((data, (row, col)), shape=(1, self.corpus_length))
+        if len(col) > 0:
+            feat = feat * (1. / len(col))
+        return feat
+
+class ImportantFeatureExtractor:
+    """
+    Extracts important bag-of-words features from a sentence.
+    """
+    def __init__(self, indexer: Indexer, train_exs, stop_words, appear):
+        for sentimentExample in train_exs:
+            words = sentimentExample.words
+            for word in words:
+                lowercase = word.lower()
+                if not lowercase in stop_words:
+                    indexer.add_and_get_index(lowercase)
+
+        important_indexer = Indexer()
+        for i in range(len(indexer)):
+            word = indexer.get_object(i)
+            if indexer.count_of(word) >= appear:
+                important_indexer.add_and_get_index(word)
+        self.indexer = important_indexer
+        self.corpus_length = len(important_indexer)
+        print("corpus length is {:d}".format(self.corpus_length))
+
+        self.feats = []
+        for i, sentimentExample in enumerate(train_exs):
+            sentence = sentimentExample.words
+            self.feats.append(self.calculate_sentence_probability(sentence))
 
     def calculate_sentence_probability(self, sentence):
         col = [self.indexer.index_of(word.lower()) for word in sentence if self.indexer.contains(word.lower())]
@@ -138,6 +169,8 @@ def train_model(args, train_exs):
 
     if args.feats == "UNIGRAM":
         feat_extractor = UnigramFeatureExtractor(Indexer(), train_exs, stop_words)
+    elif args.feats == "IMPORTANT":
+        feat_extractor = ImportantFeatureExtractor(Indexer(), train_exs, stop_words, args.appear)
 
     if args.model == "LR":
         model = train_logistic_regression(train_exs, feat_extractor)

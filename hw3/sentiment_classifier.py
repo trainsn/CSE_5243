@@ -13,8 +13,9 @@ def _parse_args():
     """
     parser = argparse.ArgumentParser(description='trainer.py')
     parser.add_argument('--model', type=str, default='KNN', help='model to run (KNN or LR)')
-    parser.add_argument('--feats', type=str, default='UNIGRAM', help='feats to use (UNIGRAM, IMPORTANT)')
     parser.add_argument('--k', type=int, default=5, help='parameter k for KNN')
+    parser.add_argument('--feats', type=str, default='UNIGRAM', help='feats to use (UNIGRAM, IMPORTANT)')
+    parser.add_argument('--appear', type=int, default=2, help='the number a word should appear at least')
     args = parser.parse_args()
     return args
 
@@ -76,11 +77,15 @@ if __name__ == '__main__':
     # Train and evaluate
     start_time = time.time()
     model = train_model(args, train_items)
+    print("Time for training: %.2f seconds" % (time.time() - start_time))
+
+    start_time = time.time()
     print("=====Train Accuracy=====")
     evaluate(model, train_items)
     print("=====Dev Accuracy=====")
     evaluate(model, dev_items)
     print("=====Test Accuracy=====")
     evaluate(model, test_items)
-    print("Time for training and evaluation: %.2f seconds" % (time.time() - start_time))
+    print("Time for evaluation: %.2f seconds" % (time.time() - start_time))
+
 

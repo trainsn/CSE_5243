@@ -9,6 +9,7 @@ class Indexer(object):
     def __init__(self):
         self.objs_to_ints = {}
         self.ints_to_objs = {}
+        self.objs_to_count = {}
 
     def __repr__(self):
         return str([str(self.get_object(i)) for i in range(0, len(self))])
@@ -46,6 +47,16 @@ class Indexer(object):
         else:
             return self.objs_to_ints[object]
 
+    def count_of(self, object):
+        """
+        :param object: object to look up
+        :return: Returns -1 if the object isn't present, count otherwise
+        """
+        if (object not in self.objs_to_ints):
+            return -1
+        else:
+            return self.objs_to_count[object]
+
     def add_and_get_index(self, object, add=True):
         """
         Adds the object to the index if it isn't present, always returns a nonnegative index
@@ -59,4 +70,7 @@ class Indexer(object):
             new_idx = len(self.objs_to_ints)
             self.objs_to_ints[object] = new_idx
             self.ints_to_objs[new_idx] = object
+            self.objs_to_count[object] = 1
+        else:
+            self.objs_to_count[object] += 1
         return self.objs_to_ints[object]
