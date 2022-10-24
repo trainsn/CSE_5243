@@ -52,7 +52,7 @@ def read_sentiment_examples():
 
     num_items = len(items)
     num_train_items, num_dev_items = int(num_items * 0.7), int(num_items * 0.15)
-    rnd_idx = np.random.permutation(num_items)
+    rnd_idx = np.load("rnd_idx.npy")
     train_items, dev_items, test_items = [], [], []
     for i in range(num_items):
         if i < num_train_items:
