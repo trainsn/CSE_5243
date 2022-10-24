@@ -12,7 +12,7 @@ def _parse_args():
     :return: the parsed args bundle
     """
     parser = argparse.ArgumentParser(description='trainer.py')
-    parser.add_argument('--model', type=str, default='KNN', help='model to run (KNN or LR)')
+    parser.add_argument('--model', type=str, default='KNN', help='model to run (KNN, DT or LR)')
     parser.add_argument('--k', type=int, default=5, help='parameter k for KNN')
     parser.add_argument('--feats', type=str, default='UNIGRAM', help='feats to use (UNIGRAM, IMPORTANT)')
     parser.add_argument('--appear', type=int, default=2, help='the number a word should appear at least')

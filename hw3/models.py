@@ -4,6 +4,7 @@ from utils import *
 import nltk
 from nltk.corpus import stopwords
 from scipy.sparse import csr_matrix
+from sklearn import tree
 
 import pdb
 
@@ -117,6 +118,15 @@ class LogisticRegressionClassifier(SentimentClassifier):
         feat = self.feat_extractor.calculate_sentence_probability(sentence)
         return int(feat.dot(np.expand_dims(self.w, axis=1))[0, 0] > 0)
 
+class DecisicionTreeClassifier(SentimentClassifier):
+    def __init__(self, feat_extractor):
+        self.feat_extractor = feat_extractor
+        self.clf = tree.DecisionTreeClassifier()
+
+    def predict(self, sentence):
+        feat = self.feat_extractor.calculate_sentence_probability(sentence).toarray()
+        return self.clf.predict(feat)[0]
+
 def train_logistic_regression(train_exs, feat_extractor) -> LogisticRegressionClassifier:
     """
     Train a logistic regression model.
@@ -155,6 +165,27 @@ def train_logistic_regression(train_exs, feat_extractor) -> LogisticRegressionCl
 
     return lr
 
+def train_decision_tree(train_exs, feat_extractor) -> DecisicionTreeClassifier:
+    """
+    Train a decision tree model.
+    :param train_exs: training set, List of SentimentExample objects
+    :param feat_extractor: feature extractor to use
+    :return: trained DecisicionTreeClassifier model
+    """
+    dt = DecisicionTreeClassifier(feat_extractor)
+
+    X, Y = [], []
+    for i in range(len(feat_extractor.feats)):
+        feat = feat_extractor.feats[i].toarray()[0]
+        X.append(feat)
+        sentimentExample = train_exs[i]
+        y = sentimentExample.label
+        Y.append(y)
+    X, Y = np.array(X), np.array(Y)
+    dt.clf.fit(X, Y)
+
+    return dt
+
 def train_model(args, train_exs):
     """
     Main entry point. Trains and returns one of several models depending on the args
@@ -176,6 +207,8 @@ def train_model(args, train_exs):
         model = train_logistic_regression(train_exs, feat_extractor)
     elif args.model == "KNN":
         model = KNearestNeighborClassifier(train_exs, feat_extractor, args.k)
+    elif args.model == "DT":
+        model = train_decision_tree(train_exs, feat_extractor)
 
     return model
 
