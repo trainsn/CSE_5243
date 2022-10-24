@@ -72,7 +72,7 @@ class KNearestNeighborClassifier(SentimentClassifier):
         labels = np.array(labels)
 
         knn = np.argpartition(-similarities, self.k)[:self.k]
-        if labels[knn].sum() >= self.k:
+        if labels[knn].sum() > self.k // 2:
             return 1
         else:
             return 0
