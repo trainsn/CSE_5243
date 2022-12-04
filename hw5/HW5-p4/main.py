@@ -1,6 +1,8 @@
 import os
 import numpy as np
 from utils import *
+from exact_similarity import ExactSimilarity
+from minhash_similarity import MinHashSimilarity
 
 import pdb
 
@@ -38,14 +40,6 @@ for i, sentence in enumerate(sentences):
         if indexer.contains(word.lower()):
             D[i][indexer.index_of(word.lower())] = True
 
-
-simi = np.zeros((M, M))
-for i in range(M):
-    for j in range(M):
-        simi[i, j] = (D[i] * D[j]).sum() / (D[i] + D[j]).sum()
-    if i % 100 == 0:
-        print("finish calculating similarity for sentence {:d}".format(i))
-
-np.save("exact_similarity.npy", simi)
-
-pdb.set_trace()
+ExactSimilarity(D)
+MinHashSimilarity(D, 16)
+MinHashSimilarity(D, 128)
